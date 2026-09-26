@@ -1,5 +1,5 @@
 #include <gtk/gtk.h>
-
+#include <stdio.h> 
 
 /////////////////// CSS /////////////////////////////////////
 static const char* CSS =
@@ -7,7 +7,14 @@ static const char* CSS =
     "  border: 2px dashed #3584e4;"             /* pointillés bleus */
     "  padding: 6px;"
     "  background-color: alpha(#3584e4, 0.08);"  /* fond bleu très pâle */
+    "}"
+    ".buttons {"
+    "  background-color: #4b4b4b;"   // fond bleu plein
+    "  color: white;"                // texte blanc
+    "  font-size: 20px;"             // texte plus gros
+    "  font-weight: bold;"           // en gras
     "}";
+
 
 static void on_startup(GApplication *app, gpointer data) {
     (void)app;    // paramètres imposés par le signal, mais inutiles ici :
@@ -67,6 +74,19 @@ static void activate(GtkApplication *app, gpointer data) {
 
     
     GtkWidget *buttons = gtk_grid_new();
+    for(int i=0;i<9;i++){
+        // on définit son nom ( i en str )
+        char number[2] = { 48 + i, 0 };
+        // On crée une label avec comme valeur number (i en str)
+        GtkWidget *label = gtk_label_new(number);
+        // On l'ajoute a notre grille en format 3x3
+        gtk_grid_attach(GTK_GRID(buttons),label,i%3,i/3,1,1);
+        // On ajout une classe css liée a ce widget
+        gtk_widget_add_css_class(label, "bloc");
+    
+        gtk_widget_set_size_request(label, 60, 60);
+    }
+
     // On définit leur taille
     gtk_widget_set_size_request(screen, -1, 80);   // screen : 80 px de haut (largeur libre)
     gtk_widget_set_vexpand(buttons, TRUE);          // buttons : prend tout le reste    
