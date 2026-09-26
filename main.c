@@ -72,19 +72,28 @@ static void activate(GtkApplication *app, gpointer data) {
     gtk_editable_set_alignment(GTK_EDITABLE(screen), 1.0);   
     gtk_widget_set_can_focus(screen, FALSE);
 
-    
+    // On crée une grille qui vas servir d'endroit pour placée nos boutons
     GtkWidget *buttons = gtk_grid_new();
-    for(int i=0;i<9;i++){
-        // on définit son nom ( i en str )
-        char number[2] = { 48 + i, 0 };
-        // On crée une label avec comme valeur number (i en str)
-        GtkWidget *label = gtk_label_new(number);
-        // On l'ajoute a notre grille en format 3x3
-        gtk_grid_attach(GTK_GRID(buttons),label,i%3,i/3,1,1);
-        // On ajout une classe css liée a ce widget
-        gtk_widget_add_css_class(label, "bloc");
-    
-        gtk_widget_set_size_request(label, 60, 60);
+    // On crée les boutons
+    GtkWidget *button_C = gtk_button_new_with_label("C");
+    gtk_grid_attach(GTK_GRID(buttons),button_C,0,0,3,1);
+    GtkWidget *button_Zero = gtk_button_new_with_label("0");
+    gtk_grid_attach(GTK_GRID(buttons),button_Zero,0,4,3,1);
+    GtkWidget *button_div = gtk_button_new_with_label("/");    
+    gtk_grid_attach(GTK_GRID(buttons),button_div,3,0,1,1);
+    GtkWidget *button_mul = gtk_button_new_with_label("*");    
+    gtk_grid_attach(GTK_GRID(buttons),button_mul,3,1,1,1);
+    GtkWidget *button_add = gtk_button_new_with_label("+");    
+    gtk_grid_attach(GTK_GRID(buttons),button_add,3,2,1,1);
+    GtkWidget *button_sub = gtk_button_new_with_label("-");    
+    gtk_grid_attach(GTK_GRID(buttons),button_sub,3,3,1,1);
+    GtkWidget *button_res = gtk_button_new_with_label("=");    
+    gtk_grid_attach(GTK_GRID(buttons),button_res,3,4,1,1);
+
+    for(int i=1;i<10;i++){
+        char label[2] = {'0'+i,'\0'};
+        GtkWidget *button_number = gtk_button_new_with_label(label);
+        gtk_grid_attach(GTK_GRID(buttons), button_number, (i-1)%3, 3-(i-1)/3, 1, 1);
     }
 
     // On définit leur taille
