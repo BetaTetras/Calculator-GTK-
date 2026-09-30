@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
-#include <stdio.h> 
+#include <stdio.h>
+#include "lib.c"
 
 /////////////////// CSS /////////////////////////////////////
 static const char* CSS =
@@ -28,7 +29,48 @@ static void on_startup(GApplication *app, gpointer data) {
         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);   // en priorité sur le thème
     g_object_unref(css);                            // GTK garde sa propre référence
 }
-////////////////////////////////////////////////////////
+/////////////////// buttons /////////////////////////////////////
+static void on_buttons(GtkButton *button, gpointer data){
+    GtkEditable *screen = GTK_EDITABLE(data);
+    const char *labelOFButton = gtk_button_get_label(button);
+    const char actualChar = labelOFButton[0];
+    const char *actualCalculus = gtk_editable_get_text(screen);
+
+    if(actualChar == 'C'){
+        gtk_editable_set_text(screen,"0");
+        return;
+    }
+    if(actualChar == '='){
+        size_t numberOfOpe, numberOfNbr;
+        int* tabOfNum = NULL;
+        char* tabOfOpe = NULL;
+        char* buffeur = NULL;
+        double res;
+
+        if(valideCalcule(actualCalculus) == 0
+           && tokenisation(actualCalculus,&numberOfNbr,&tabOfNum,&numberOfOpe,&tabOfOpe) == 0
+           && calcule(numberOfOpe,tabOfOpe,numberOfNbr,tabOfNum,&res) == 0
+           && doubleToString(res,&buffeur) == 0){
+            gtk_editable_set_text(screen,buffeur);
+        }else{
+            gtk_editable_set_text(screen,"error...");
+        }
+        free(tabOfNum);
+        free(tabOfOpe);
+        free(buffeur);
+        return;
+    }
+
+    const char *base = (strcmp(actualCalculus,"error...") == 0) ? "0" : actualCalculus;
+    char *newText;
+    if(strcmp(base,"0") == 0 && isNumber(actualChar)){
+        newText = g_strdup(labelOFButton);             // remplace le "0" de départ
+    }else{
+        newText = g_strdup_printf("%s%s",base,labelOFButton);
+    }
+    gtk_editable_set_text(screen,newText);
+    g_free(newText);
+}
 
 
 // Crée juste un label
@@ -74,26 +116,42 @@ static void activate(GtkApplication *app, gpointer data) {
 
     // On crée une grille qui vas servir d'endroit pour placée nos boutons
     GtkWidget *buttons = gtk_grid_new();
+    gtk_grid_set_row_homogeneous(GTK_GRID(buttons), TRUE);      // toutes les lignes ont la même hauteur
+    gtk_grid_set_column_homogeneous(GTK_GRID(buttons), TRUE);   // toutes les colonnes ont la même largeur
     // On crée les boutons
     GtkWidget *button_C = gtk_button_new_with_label("C");
     gtk_grid_attach(GTK_GRID(buttons),button_C,0,0,3,1);
+    g_signal_connect(button_C,"clicked",G_CALLBACK(on_buttons),screen);
+
     GtkWidget *button_Zero = gtk_button_new_with_label("0");
     gtk_grid_attach(GTK_GRID(buttons),button_Zero,0,4,3,1);
+    g_signal_connect(button_Zero,"clicked",G_CALLBACK(on_buttons),screen);
+
     GtkWidget *button_div = gtk_button_new_with_label("/");    
     gtk_grid_attach(GTK_GRID(buttons),button_div,3,0,1,1);
+    g_signal_connect(button_div,"clicked",G_CALLBACK(on_buttons),screen);
+
     GtkWidget *button_mul = gtk_button_new_with_label("*");    
     gtk_grid_attach(GTK_GRID(buttons),button_mul,3,1,1,1);
+    g_signal_connect(button_mul,"clicked",G_CALLBACK(on_buttons),screen);
+
     GtkWidget *button_add = gtk_button_new_with_label("+");    
     gtk_grid_attach(GTK_GRID(buttons),button_add,3,2,1,1);
+    g_signal_connect(button_add,"clicked",G_CALLBACK(on_buttons),screen);
+
     GtkWidget *button_sub = gtk_button_new_with_label("-");    
     gtk_grid_attach(GTK_GRID(buttons),button_sub,3,3,1,1);
+    g_signal_connect(button_sub,"clicked",G_CALLBACK(on_buttons),screen);
+
     GtkWidget *button_res = gtk_button_new_with_label("=");    
     gtk_grid_attach(GTK_GRID(buttons),button_res,3,4,1,1);
+    g_signal_connect(button_res,"clicked",G_CALLBACK(on_buttons),screen);
 
     for(int i=1;i<10;i++){
         char label[2] = {'0'+i,'\0'};
         GtkWidget *button_number = gtk_button_new_with_label(label);
         gtk_grid_attach(GTK_GRID(buttons), button_number, (i-1)%3, 3-(i-1)/3, 1, 1);
+        g_signal_connect(button_number,"clicked",G_CALLBACK(on_buttons),screen);
     }
 
     // On définit leur taille
